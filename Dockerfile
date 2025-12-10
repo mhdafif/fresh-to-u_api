@@ -4,6 +4,11 @@ FROM node:22-alpine AS base
 RUN apk add --no-cache libc6-compat openssl && corepack enable
 WORKDIR /app
 
+# Provide a placeholder connection string so Prisma CLI commands run during build.
+# The real DATABASE_URL will be set at runtime when the container starts.
+# ARG PRISMA_DB_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ENV DATABASE_URL="${DATABASE_URL}"
+
 # Install dependencies (dev + prod) using the lockfile
 COPY package.json prisma.config.ts pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
