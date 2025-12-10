@@ -5,7 +5,7 @@ RUN apk add --no-cache libc6-compat openssl && corepack enable
 WORKDIR /app
 
 # Install dependencies (dev + prod) using the lockfile
-COPY package.json pnpm-lock.yaml ./
+COPY package.json prisma.config.ts pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
