@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Provide a placeholder connection string so Prisma CLI commands run during build.
 # The real DATABASE_URL will be set at runtime when the container starts.
-# ARG PRISMA_DB_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ARG PRISMA_DB_URL="postgresql://mhdaff:1234Qwer@freshtou-app-uw9wdt:5432/freshtou"
 ENV DATABASE_URL="${PRISMA_DB_URL}"
 
 # Install dependencies (dev + prod) using the lockfile
