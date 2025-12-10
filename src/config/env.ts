@@ -16,7 +16,7 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
   OPENAI_API_KEY: z.string(),
-  CORS_ORIGIN: z.string().default("http://localhost:4005"),
+  CORS_ORIGIN: z.string(),
   R2_ENDPOINT: z.string(),
   R2_ACCOUNT_ID: z.string(),
   R2_ACCESS_KEY_ID: z.string(),
