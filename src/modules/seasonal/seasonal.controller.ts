@@ -1,7 +1,7 @@
 import { Response } from "express";
 
-import { type AuthenticatedRequest } from "../../middleware/auth";
-import { SeasonalService } from "./seasonal.service";
+import { type AuthenticatedRequest } from "../../middleware/auth.js";
+import { SeasonalService } from "./seasonal.service.js";
 
 export class SeasonalController {
   static async getSeasonalFoods(req: AuthenticatedRequest, res: Response) {

@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { optionalAuth } from "../../middleware/auth";
-import { HistoryController } from "./history.controller";
+import { optionalAuth } from "../../middleware/auth.js";
+import { HistoryController } from "./history.controller.js";
 
 const router: Router = Router();
 

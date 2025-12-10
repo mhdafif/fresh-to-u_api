@@ -34,7 +34,7 @@
 // });
 import { randomUUID } from "crypto";
 
-import { prisma } from "../../prisma";
+import { prisma } from "../../prisma.js";
 
 // In-memory session storage (for demo purposes)
 // In production, you'd want to use Redis or database

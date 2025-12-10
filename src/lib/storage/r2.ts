@@ -6,7 +6,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 
-import env from "../../config/env";
+import env from "../../config/env.js";
 
 const r2Client = new S3Client({
   region: "auto",

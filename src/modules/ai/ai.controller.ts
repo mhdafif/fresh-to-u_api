@@ -3,12 +3,12 @@ import { generateText } from "ai";
 import { Response } from "express";
 import { z } from "zod";
 
-import { getSessionId } from "../../lib/cookies";
-import { R2StorageService } from "../../lib/storage/r2";
-import { AuthenticatedRequest } from "../../middleware/auth";
-import { HistoryService } from "../history/history.service";
-import { AIIdentifyRequest, AIIdentifyResponse } from "./interfaces";
-import { promptEn } from "./prompt";
+import { getSessionId } from "../../lib/cookies.js";
+import { R2StorageService } from "../../lib/storage/r2.js";
+import { AuthenticatedRequest } from "../../middleware/auth.js";
+import { HistoryService } from "../history/history.service.js";
+import { AIIdentifyRequest, AIIdentifyResponse } from "./interfaces.js";
+import { promptEn } from "./prompt.js";
 
 // const zhipu = createZhipu({
 //   baseURL: "https://open.bigmodel.cn/api/paas/v4",

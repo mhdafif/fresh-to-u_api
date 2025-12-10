@@ -1,12 +1,12 @@
-// import { prisma } from "../../prisma/client";
-import { prisma } from "../../prisma";
+// import { prisma } from "../../prisma/client.js";
+import { prisma } from "../../prisma.js";
 
 import {
   CreateHistoryData,
   GetHistoryOptions,
   GuestScanLimitInfo,
   HistoryOwner,
-} from "./interfaces";
+} from "./interfaces.js";
 
 export class HistoryService {
   static async create(data: CreateHistoryData) {

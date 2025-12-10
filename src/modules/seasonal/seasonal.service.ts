@@ -3,7 +3,7 @@ import {
   SeasonalFood,
   SeasonalMonth,
   SeasonalParams,
-} from "./ISeasonal";
+} from "./ISeasonal.js";
 
 // Mock seasonal food database - in a real app, this would come from a database or external API
 const mockSeasonalFoods: SeasonalFood[] = [

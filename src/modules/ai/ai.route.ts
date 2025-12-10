@@ -1,8 +1,8 @@
 import { Router } from "express";
 
-import { optionalAuth } from "../../middleware/auth";
-import { rateLimiter } from "../../middleware/rate-limit";
-import { AIController } from "./ai.controller";
+import { optionalAuth } from "../../middleware/auth.js";
+import { rateLimiter } from "../../middleware/rate-limit.js";
+import { AIController } from "./ai.controller.js";
 
 const router: Router = Router();
 

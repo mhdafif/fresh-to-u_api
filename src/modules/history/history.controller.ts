@@ -1,8 +1,8 @@
 import { Response } from "express";
 
-import { getSessionId } from "../../lib/cookies";
-import { type AuthenticatedRequest } from "../../middleware/auth";
-import { HistoryService } from "./history.service";
+import { getSessionId } from "../../lib/cookies.js";
+import { type AuthenticatedRequest } from "../../middleware/auth.js";
+import { HistoryService } from "./history.service.js";
 
 export class HistoryController {
   static async checkScanLimit(req: AuthenticatedRequest, res: Response) {

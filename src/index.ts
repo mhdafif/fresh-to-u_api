@@ -4,16 +4,16 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 
-import env from "./config/env";
-import { optionalAuth } from "./middleware/auth";
-import { errorHandler } from "./middleware/error-handler";
-import aiRoutes from "./modules/ai/ai.route";
-import authRoutes from "./modules/auth/auth.route";
-import historyRoutes from "./modules/history/history.route";
-import seasonalRoutes from "./modules/seasonal/seasonal.route";
+import env from "./config/env.js";
+import { optionalAuth } from "./middleware/auth.js";
+import { errorHandler } from "./middleware/error-handler.js";
+import aiRoutes from "./modules/ai/ai.route.js";
+import authRoutes from "./modules/auth/auth.route.js";
+import historyRoutes from "./modules/history/history.route.js";
+import seasonalRoutes from "./modules/seasonal/seasonal.route.js";
 
 const app = express();
-
+console.log("env", env);
 // Middleware
 app.use(helmet());
 app.use(

@@ -1,7 +1,7 @@
 import { type Router as ExpressRouter, Router } from "express";
 
-import { optionalAuth } from "../../middleware/auth";
-import { SeasonalController } from "./seasonal.controller";
+import { optionalAuth } from "../../middleware/auth.js";
+import { SeasonalController } from "./seasonal.controller.js";
 
 const router: ExpressRouter = Router();
 
