@@ -1,0 +1,47 @@
+# dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# testing
+coverage
+
+# production
+build
+dist
+
+# misc
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+.env
+
+# logs
+logs
+*.log
+
+# runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# git
+.git
+.gitignore
+README.md
+
+# docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# IDE
+.vscode
+.idea
+
+# OS
+Thumbs.db

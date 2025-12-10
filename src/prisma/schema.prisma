@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified Boolean   @default(false)
+  image         String?
+  name          String?
+  accounts      Account[]
+  histories     History[]
+}
+
+model Guest {
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessionId String    @id
+  histories History[]
+}
+
+model Account {
+  id                String    @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        DateTime?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model History {
+  id          String      @id @default(cuid())
+  userId      String?
+  guestId     String?
+  type        HistoryType
+  query       String?
+  resultLabel String?
+  confidence  Float?
+  createdAt   DateTime    @default(now())
+  detail      Json?
+  guest       Guest?      @relation(fields: [guestId], references: [sessionId], onDelete: Cascade)
+  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([guestId])
+  @@index([type])
+}
+
+model FoodItem {
+  id             String          @id @default(cuid())
+  name           String
+  category       Category
+  aliases        String[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  priceSnapshots PriceSnapshot[]
+  seasonalInfos  SeasonalInfo[]
+
+  @@unique([name, category])
+}
+
+model City {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  region         String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  priceSnapshots PriceSnapshot[]
+  seasonalInfos  SeasonalInfo[]
+}
+
+model SeasonalInfo {
+  id       String   @id @default(cuid())
+  cityId   String
+  foodId   String
+  startMon Int
+  endMon   Int
+  city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  food     FoodItem @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, foodId])
+}
+
+model PriceSnapshot {
+  id         String   @id @default(cuid())
+  cityId     String
+  foodId     String
+  pricePerKg Int
+  source     String
+  at         DateTime @default(now())
+  city       City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  food       FoodItem @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([cityId, foodId])
+  @@index([at])
+}
+
+enum HistoryType {
+  SCAN
+  SEARCH
+}
+
+enum Category {
+  FRUIT
+  VEGETABLE
+  PROTEIN
+  OTHER
+}
