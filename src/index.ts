@@ -13,7 +13,7 @@ import historyRoutes from "./modules/history/history.route.js";
 import seasonalRoutes from "./modules/seasonal/seasonal.route.js";
 
 const app = express();
-console.log("env", env);
+
 // Middleware
 app.use(helmet());
 app.use(

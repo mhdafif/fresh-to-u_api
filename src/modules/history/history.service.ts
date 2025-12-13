@@ -209,6 +209,7 @@ export class HistoryService {
     guestId: string | null,
     dailyLimit: number = 10
   ): Promise<GuestScanLimitInfo> {
+    // console.log("Available models:", Object.keys(prisma));
     // If no guestId, user cannot scan
     if (!guestId) {
       return {

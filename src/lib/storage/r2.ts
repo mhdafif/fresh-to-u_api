@@ -26,7 +26,9 @@ export class R2StorageService {
     imageBuffer: Buffer,
     mimeType: string
   ): Promise<{ url: string; key: string }> {
-    const key = `images/${uuidv4()}.${this.getFileExtensionFromMimeType(mimeType)}`;
+    const key = `images/${uuidv4()}.${this.getFileExtensionFromMimeType(
+      mimeType
+    )}`;
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
@@ -66,7 +68,6 @@ export class R2StorageService {
       Bucket: BUCKET_NAME,
       Key: key,
     });
-    console.log("ke sini");
 
     try {
       return await getSignedUrl(r2Client, command, { expiresIn });

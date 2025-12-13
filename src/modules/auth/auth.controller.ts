@@ -7,7 +7,6 @@ export class AuthController {
    * Get current user session
    */
   static async getSession(req: Request, res: Response) {
-    console.log("ke get session auth");
     try {
       const sessionCookie = req.cookies.session_id;
 
@@ -123,12 +122,16 @@ export class AuthController {
 
       // Redirect to frontend with success
       res.redirect(
-        `http://localhost:4005/profile?auth=success&user=${encodeURIComponent(user.email)}`
+        `http://localhost:4005/profile?auth=success&user=${encodeURIComponent(
+          user.email
+        )}`
       );
     } catch (error) {
       console.error("Google OAuth callback error:", error);
       res.redirect(
-        `http://localhost:4005/profile?auth=error&message=${encodeURIComponent("Failed to authenticate with Google")}`
+        `http://localhost:4005/profile?auth=error&message=${encodeURIComponent(
+          "Failed to authenticate with Google"
+        )}`
       );
     }
   }

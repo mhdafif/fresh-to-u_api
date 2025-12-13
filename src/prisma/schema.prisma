@@ -64,63 +64,27 @@ model History {
   @@index([type])
 }
 
-model FoodItem {
-  id             String          @id @default(cuid())
-  name           String
-  category       Category
-  aliases        String[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  priceSnapshots PriceSnapshot[]
-  seasonalInfos  SeasonalInfo[]
+model Food {
+  id            String   @id @default(cuid())
+  name          String
+  variety       String?
+  detail        Json?
+  timesSearched Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([name, category])
+  @@unique([name, variety])
 }
 
 model City {
-  id             String          @id @default(cuid())
-  name           String          @unique
-  region         String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  priceSnapshots PriceSnapshot[]
-  seasonalInfos  SeasonalInfo[]
-}
-
-model SeasonalInfo {
-  id       String   @id @default(cuid())
-  cityId   String
-  foodId   String
-  startMon Int
-  endMon   Int
-  city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  food     FoodItem @relation(fields: [foodId], references: [id], onDelete: Cascade)
-
-  @@unique([cityId, foodId])
-}
-
-model PriceSnapshot {
-  id         String   @id @default(cuid())
-  cityId     String
-  foodId     String
-  pricePerKg Int
-  source     String
-  at         DateTime @default(now())
-  city       City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  food       FoodItem @relation(fields: [foodId], references: [id], onDelete: Cascade)
-
-  @@index([cityId, foodId])
-  @@index([at])
+  id        String   @id @default(cuid())
+  name      String   @unique
+  region    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum HistoryType {
   SCAN
   SEARCH
-}
-
-enum Category {
-  FRUIT
-  VEGETABLE
-  PROTEIN
-  OTHER
 }

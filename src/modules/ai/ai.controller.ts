@@ -7,13 +7,9 @@ import { getSessionId } from "../../lib/cookies.js";
 import { R2StorageService } from "../../lib/storage/r2.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { HistoryService } from "../history/history.service.js";
+import { FoodService } from "../food/food.service.js";
 import { AIIdentifyRequest, AIIdentifyResponse } from "./interfaces.js";
 import { promptEn } from "./prompt.js";
-
-// const zhipu = createZhipu({
-//   baseURL: "https://open.bigmodel.cn/api/paas/v4",
-//   apiKey: process.env.ZHIPU_API_KEY || "",
-// });
 
 const identifySchema = z.object({
   image: z.string().min(1, "Image is required"),
@@ -32,7 +28,6 @@ export class AIController {
           validatedData.image
         );
         imageUrl = uploadResult.url;
-        console.log("Image uploaded to R2:", imageUrl);
       } catch (uploadError) {
         console.error("Failed to upload image to R2:", uploadError);
         // Continue with AI processing even if upload fails
@@ -40,8 +35,6 @@ export class AIController {
 
       const systemPrompt = `${promptEn}
       - Respond in locale ${validatedData.locale}.`;
-      // const systemPrompt = `${promptEn}
-      // - Respond in ${validatedData.locale === "id" ? "Indonesian" : "English"}.`;
 
       const { text } = await generateText({
         model: openai("gpt-4o-mini"),
@@ -62,6 +55,7 @@ export class AIController {
           },
         ],
         temperature: 0.1,
+        maxRetries: 2,
       });
 
       // Clean up the AI response - remove any markdown formatting or extra text
@@ -96,6 +90,19 @@ export class AIController {
         ) {
           throw new Error("Invalid response structure");
         }
+
+        // Handle food tracking using FoodService
+        try {
+          await FoodService.findOrCreateFood({
+            name: result.name,
+            variety: result.notes.variety_guess || null,
+            detail: JSON.parse(JSON.stringify(result)),
+          });
+        } catch (foodError) {
+          console.error("Failed to track food:", foodError);
+          // Continue with the response even if food tracking fails
+        }
+
         let userId = null;
         let guestId = null;
         const type = req.body.type || "SCAN";
@@ -105,12 +112,6 @@ export class AIController {
         } else {
           guestId = getSessionId(req);
         }
-
-        // Prepare history metadata with image information
-        // const historyMeta = {
-        //   ...result,
-        //   originalImageUrl: imageUrl, // Keep reference to uploaded image
-        // };
 
         await HistoryService.create({
           userId,
@@ -149,6 +150,18 @@ export class AIController {
             // result.imageKey = imageKey;
           }
 
+          // Handle food tracking using FoodService
+          try {
+            await FoodService.findOrCreateFood({
+              name: result.name,
+              variety: result.notes.variety_guess || null,
+              detail: JSON.parse(JSON.stringify(result)),
+            });
+          } catch (foodError) {
+            console.error("Failed to track food:", foodError);
+            // Continue with the response even if food tracking fails
+          }
+
           let userId = null;
           let guestId = null;
           const type = req.body.type || "SCAN";
@@ -158,12 +171,6 @@ export class AIController {
           } else {
             guestId = getSessionId(req);
           }
-
-          // Prepare history metadata with image information
-          // const historyMeta = {
-          //   ...result,
-          //   // originalImageUrl: imageUrl, // Keep reference to uploaded image
-          // };
 
           await HistoryService.create({
             userId,
