@@ -1,106 +1,10 @@
 import { Response } from "express";
 
-import { getSessionId } from "../../lib/cookies.js";
+import { getGuestId } from "../../lib/cookies.js";
 import { type AuthenticatedRequest } from "../../middleware/auth.js";
 import { HistoryService } from "./history.service.js";
 
 export class HistoryController {
-  static async checkScanLimit(req: AuthenticatedRequest, res: Response) {
-    try {
-      if (req.user) {
-        // Authenticated users have no scan limits
-        return res.json({
-          data: {
-            canScan: true,
-            remainingScans: -1, // Unlimited
-            resetTime: null,
-            isGuest: false,
-          },
-          meta: {
-            message: "Successfully checked scan limit",
-            code: "success",
-          },
-        });
-      } else {
-        // For guest users, check daily scan limit
-        const guestId = getSessionId(req);
-        const limitInfo = await HistoryService.canGuestScan(guestId);
-
-        return res.json({
-          data: {
-            ...limitInfo,
-            isGuest: true,
-          },
-          meta: {
-            message: "Successfully checked scan limit",
-            code: "success",
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Check scan limit error:", error);
-      res.status(500).json({
-        message: "Failed to check scan limit",
-        status: "error",
-        code: "500",
-        data: {
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
-    }
-  }
-
-  static async save(req: AuthenticatedRequest, res: Response) {
-    try {
-      const { type, query, resultLabel, confidence, detail } = req.body;
-
-      if (!type || !["SCAN", "SEARCH"].includes(type)) {
-        return res.status(400).json({
-          message: "Invalid or missing type",
-          status: "error",
-          code: "400",
-        });
-      }
-
-      let userId = null;
-      let guestId = null;
-
-      if (req.user) {
-        userId = req.user.id;
-      } else {
-        guestId = getSessionId(req);
-      }
-
-      const history = await HistoryService.create({
-        userId,
-        guestId,
-        type,
-        query,
-        resultLabel,
-        confidence,
-        detail,
-      });
-
-      res.status(201).json({
-        data: history,
-        meta: {
-          message: "History created successfully",
-          code: "created",
-        },
-      });
-    } catch (error) {
-      console.error("Save history error:", error);
-      res.status(500).json({
-        message: "Failed to save history",
-        status: "error",
-        code: "500",
-        data: {
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
-    }
-  }
-
   static async getHistory(req: AuthenticatedRequest, res: Response) {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -115,7 +19,7 @@ export class HistoryController {
         userId = req.user.id;
       } else {
         // For guest users, use session ID
-        guestId = getSessionId(req);
+        guestId = getGuestId(req);
       }
       const result = await HistoryService.getHistory(
         { userId, guestId },
@@ -156,117 +60,42 @@ export class HistoryController {
     }
   }
 
-  static async deleteHistory(req: AuthenticatedRequest, res: Response) {
+  static async checkScanLimit(req: AuthenticatedRequest, res: Response) {
     try {
-      const { id } = req.params;
+      if (req.user) {
+        // Authenticated users have no scan limits
+        return res.json({
+          data: {
+            canScan: true,
+            remainingScans: -1, // Unlimited
+            resetTime: null,
+            isGuest: false,
+          },
+          meta: {
+            message: "Successfully checked scan limit",
+            code: "success",
+          },
+        });
+      } else {
+        // For guest users, check daily scan limit
+        const guestId = getGuestId(req);
+        const limitInfo = await HistoryService.canGuestScan(guestId);
 
-      if (!id) {
-        return res.status(400).json({
-          message: "History ID is required",
-          status: "error",
-          code: "400",
+        return res.json({
+          data: {
+            ...limitInfo,
+            isGuest: true,
+          },
+          meta: {
+            message: "Successfully checked scan limit",
+            code: "success",
+          },
         });
       }
-
-      let userId = null;
-      let guestId = null;
-
-      if (req.user) {
-        userId = req.user.id;
-      } else {
-        // For guest users, use season ID
-        guestId = getSessionId(req);
-      }
-
-      await HistoryService.deleteHistory(id, { userId, guestId });
-
-      res.json({
-        data: null,
-        meta: {
-          message: "History deleted successfully",
-          code: "deleted",
-        },
-      });
     } catch (error) {
-      console.error("Delete history error:", error);
+      console.error("Check scan limit error:", error);
       res.status(500).json({
-        message: "Failed to delete history",
-        status: "error",
-        code: "500",
-        data: {
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
-    }
-  }
-
-  static async clearHistory(req: AuthenticatedRequest, res: Response) {
-    try {
-      let userId = null;
-      let guestId = null;
-
-      if (req.user) {
-        userId = req.user.id;
-      } else {
-        // For guest users, use season ID
-        guestId = getSessionId(req);
-      }
-
-      await HistoryService.clearHistory({ userId, guestId });
-
-      res.json({
-        data: null,
-        meta: {
-          message: "History cleared successfully",
-          code: "cleared",
-        },
-      });
-    } catch (error) {
-      console.error("Clear history error:", error);
-      res.status(500).json({
-        message: "Failed to clear history",
-        status: "error",
-        code: "500",
-        data: {
-          details: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
-    }
-  }
-
-  static async getStats(req: AuthenticatedRequest, res: Response) {
-    try {
-      let userId = null;
-      let guestId = null;
-
-      if (req.user) {
-        userId = req.user.id;
-      } else {
-        // For guest users, use season ID
-        guestId = getSessionId(req);
-      }
-
-      const [totalScans, todayScans] = await Promise.all([
-        HistoryService.getHistoryCount({ userId, guestId }),
-        userId
-          ? HistoryService.getTodayScanCountForUser(userId)
-          : HistoryService.getTodayScanCount(guestId),
-      ]);
-
-      res.json({
-        data: {
-          totalScans,
-          todayScans,
-        },
-        meta: {
-          message: "Successfully retrieved user stats",
-          code: "success",
-        },
-      });
-    } catch (error) {
-      console.error("Get stats error:", error);
-      res.status(500).json({
-        message: "Failed to get user stats",
+        message: "Failed to check scan limit",
         status: "error",
         code: "500",
         data: {

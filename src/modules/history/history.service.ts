@@ -13,28 +13,19 @@ export class HistoryService {
     // If guestId is provided, ensure the guest exists
     if (data.guestId) {
       await prisma.guest.upsert({
-        where: { sessionId: data.guestId },
+        where: { id: data.guestId },
         update: {},
-        create: { sessionId: data.guestId },
+        create: { id: data.guestId },
       });
     }
 
     return prisma.history.create({
       data: {
         ...data,
-        // detail: data.detail || null,
         detail: data.detail
           ? JSON.parse(JSON.stringify(data.detail))
           : undefined,
       },
-      // include: {
-      //   user: {
-      //     select: {
-      //       id: true,
-      //       email: true,
-      //     },
-      //   },
-      // },
     });
   }
 
@@ -108,54 +99,54 @@ export class HistoryService {
     };
   }
 
-  static async deleteHistory(id: string, owner: HistoryOwner) {
-    const { userId, guestId } = owner;
+  // static async deleteHistory(id: string, owner: HistoryOwner) {
+  //   const { userId, guestId } = owner;
 
-    // First check if the history belongs to the user/guest
-    const history = await prisma.history.findFirst({
-      where: {
-        id,
-        OR: [
-          { userId: userId || undefined },
-          { guestId: guestId || undefined },
-        ],
-      },
-    });
+  //   // First check if the history belongs to the user/guest
+  //   const history = await prisma.history.findFirst({
+  //     where: {
+  //       id,
+  //       OR: [
+  //         { userId: userId || undefined },
+  //         { guestId: guestId || undefined },
+  //       ],
+  //     },
+  //   });
 
-    if (!history) {
-      throw new Error("History not found or access denied");
-    }
+  //   if (!history) {
+  //     throw new Error("History not found or access denied");
+  //   }
 
-    return prisma.history.delete({
-      where: { id },
-    });
-  }
+  //   return prisma.history.delete({
+  //     where: { id },
+  //   });
+  // }
 
-  static async clearHistory(owner: HistoryOwner) {
-    const { userId, guestId } = owner;
+  // static async clearHistory(owner: HistoryOwner) {
+  //   const { userId, guestId } = owner;
 
-    return prisma.history.deleteMany({
-      where: {
-        OR: [
-          { userId: userId || undefined },
-          { guestId: guestId || undefined },
-        ],
-      },
-    });
-  }
+  //   return prisma.history.deleteMany({
+  //     where: {
+  //       OR: [
+  //         { userId: userId || undefined },
+  //         { guestId: guestId || undefined },
+  //       ],
+  //     },
+  //   });
+  // }
 
-  static async getHistoryCount(owner: HistoryOwner): Promise<number> {
-    const { userId, guestId } = owner;
+  // static async getHistoryCount(owner: HistoryOwner): Promise<number> {
+  //   const { userId, guestId } = owner;
 
-    return prisma.history.count({
-      where: {
-        OR: [
-          { userId: userId || undefined },
-          { guestId: guestId || undefined },
-        ],
-      },
-    });
-  }
+  //   return prisma.history.count({
+  //     where: {
+  //       OR: [
+  //         { userId: userId || undefined },
+  //         { guestId: guestId || undefined },
+  //       ],
+  //     },
+  //   });
+  // }
 
   static async getTodayScanCount(guestId: string | null): Promise<number> {
     // If no guestId, return 0
@@ -180,30 +171,30 @@ export class HistoryService {
     });
   }
 
-  static async getTodayScanCountForUser(
-    userId: string | null
-  ): Promise<number> {
-    // If no userId, return 0
-    if (!userId) {
-      return 0;
-    }
+  // static async getTodayScanCountForUser(
+  //   userId: string | null
+  // ): Promise<number> {
+  //   // If no userId, return 0
+  //   if (!userId) {
+  //     return 0;
+  //   }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0); // Start of today
+  //   const tomorrow = new Date(today);
+  //   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
-    return prisma.history.count({
-      where: {
-        userId,
-        type: "SCAN",
-        createdAt: {
-          gte: today,
-          lt: tomorrow,
-        },
-      },
-    });
-  }
+  //   return prisma.history.count({
+  //     where: {
+  //       userId,
+  //       type: "SCAN",
+  //       createdAt: {
+  //         gte: today,
+  //         lt: tomorrow,
+  //       },
+  //     },
+  //   });
+  // }
 
   static async canGuestScan(
     guestId: string | null,
