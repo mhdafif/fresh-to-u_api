@@ -5,11 +5,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 import env from "./config/env.js";
-import { optionalAuth } from "./middleware/auth.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import aiRoutes from "./modules/ai/ai.route.js";
 import authRoutes from "./modules/auth/auth.route.js";
+import guestRoutes from "./modules/guest/guest.route.js";
 import historyRoutes from "./modules/history/history.route.js";
+import scanLimitRoutes from "./modules/scan-limit/scan-limit.route.js";
 import seasonalRoutes from "./modules/seasonal/seasonal.route.js";
 
 const app = express();
@@ -35,9 +36,11 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/ai", optionalAuth, aiRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/guest", guestRoutes);
 app.use("/api/history", historyRoutes);
-app.use("/api/seasonal", optionalAuth, seasonalRoutes);
+app.use("/api/scan-limit", scanLimitRoutes);
+app.use("/api/seasonal", seasonalRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {

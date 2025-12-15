@@ -75,7 +75,6 @@ export class FoodService {
   }) {
     // First try to find exact match (name + variety)
     let food = await this.findByNameAndVariety(name, variety);
-    console.log("food uiii", food);
     if (food) {
       // Update existing food - increment times searched
       return await this.incrementTimesSearched(food.id);
