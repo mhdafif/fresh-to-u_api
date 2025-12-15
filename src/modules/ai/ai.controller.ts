@@ -3,13 +3,15 @@ import { generateText } from "ai";
 import { Response } from "express";
 import { z } from "zod";
 
-import { getSessionId } from "../../lib/cookies.js";
+import { getGuestId } from "../../lib/cookies.js";
 import { R2StorageService } from "../../lib/storage/r2.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { HistoryService } from "../history/history.service.js";
 import { FoodService } from "../food/food.service.js";
+import { GuestService } from "../guest/guest.service.js";
 import { AIIdentifyRequest, AIIdentifyResponse } from "./interfaces.js";
 import { promptEn } from "./prompt.js";
+import { ScanLimitService } from "../scan-limit/scan-limit.service.js";
 
 const identifySchema = z.object({
   image: z.string().min(1, "Image is required"),
@@ -20,6 +22,43 @@ export class AIController {
   static async identify(req: AuthenticatedRequest, res: Response) {
     try {
       const validatedData = identifySchema.parse(req.body) as AIIdentifyRequest;
+
+      // Get userId from authenticated user or guestId from guest
+      let userId = undefined;
+      let guestId = undefined;
+
+      if (req.user) {
+        userId = req.user.id;
+      } else {
+        guestId = getGuestId(req);
+
+        // If no guestId exists, create one and set guest
+        // if (!guestId) {
+        //   const ipAddress = GuestService.getClientIpAddress(req);
+        //   const guest = await GuestService.getOrCreateGuest(undefined, ipAddress);
+        //   guestId = guest.id;
+        //   GuestService.setGuestCookie(res, guestId);
+        // }
+      }
+
+      // Check scan limits
+      const limit = await ScanLimitService.getOrCreateDefaultLimit(
+        { userId, guestId },
+        10
+      );
+
+      if (limit.isLimitExceeded) {
+        return res.status(429).json({
+          error: "Limit Exceeded",
+          message:
+            "You have reached your scan limit. Please upgrade your plan or try again later.",
+          data: {
+            remaining: limit.remaining,
+            total: limit.total,
+            isLimitExceeded: limit.isLimitExceeded,
+          },
+        });
+      }
 
       // Upload image to R2 storage
       let imageUrl: string | null = null;
@@ -110,7 +149,15 @@ export class AIController {
         if (req.user) {
           userId = req.user.id;
         } else {
-          guestId = getSessionId(req);
+          guestId = getGuestId(req);
+        }
+
+        // Update scan limits after successful scan
+        try {
+          await LimitService.decrementLimit({ userId, guestId });
+        } catch (limitError) {
+          console.error("Failed to decrement limit:", limitError);
+          // Continue with response even if limit update fails
         }
 
         await HistoryService.create({
@@ -169,7 +216,15 @@ export class AIController {
           if (req.user) {
             userId = req.user.id;
           } else {
-            guestId = getSessionId(req);
+            guestId = getGuestId(req);
+          }
+
+          // Update scan limits after successful scan
+          try {
+            await LimitService.decrementLimit({ userId, guestId });
+          } catch (limitError) {
+            console.error("Failed to decrement limit:", limitError);
+            // Continue with response even if limit update fails
           }
 
           await HistoryService.create({
