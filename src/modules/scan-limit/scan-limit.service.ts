@@ -1,9 +1,9 @@
 import { prisma } from "../../prisma.js";
 import {
-  ScanScanLimitCheckRequest,
-  ScanScanLimitCreateRequest,
-  ScanScanLimitUpdateRequest,
-} from "./interfaces.js";
+  ScanLimitCheckRequest,
+  ScanLimitCreateRequest,
+  ScanLimitUpdateRequest,
+} from "./scan-limit.interfaces.js";
 
 export class ScanLimitService {
   static async checkLimit(request: ScanLimitCheckRequest) {
@@ -30,7 +30,7 @@ export class ScanLimitService {
           total: defaultTotal,
         });
       } catch (error) {
-        console.error('Error creating limit:', error);
+        console.error("Error creating limit:", error);
         // Fallback: try to find the limit again (might have been created by another request)
         limit = await prisma.scanLimit.findFirst({
           where: {
@@ -74,15 +74,15 @@ export class ScanLimitService {
 
     // Validate the resetAt date and provide a safe fallback
     if (!resetAt || isNaN(resetAt.getTime())) {
-      console.error('Invalid resetAt date calculated, using fallback');
+      console.error("Invalid resetAt date calculated, using fallback");
       // Fallback: 24 hours from now in a clean date object
       const now = new Date();
-      resetAt = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+      resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     }
 
-    console.log('Creating limit with resetAt:', resetAt.toISOString());
-    console.log('resetAt type:', typeof resetAt);
-    console.log('resetAt value:', resetAt);
+    console.log("Creating limit with resetAt:", resetAt.toISOString());
+    console.log("resetAt type:", typeof resetAt);
+    console.log("resetAt value:", resetAt);
 
     try {
       return await prisma.scanLimit.create({
@@ -96,8 +96,8 @@ export class ScanLimitService {
       });
     } catch (error: any) {
       // If there's a unique constraint violation, the limit already exists
-      if (error.code === 'P2002') {
-        console.log('Limit already exists, returning existing limit');
+      if (error.code === "P2002") {
+        console.log("Limit already exists, returning existing limit");
         // Return the existing limit
         const existingLimit = await prisma.scanLimit.findFirst({
           where: {
@@ -185,11 +185,11 @@ export class ScanLimitService {
 
     // Validate the resetAt date
     if (isNaN(resetAt.getTime())) {
-      console.error('Invalid resetAt date in resetLimit, using fallback');
-      resetAt.setTime(Date.now() + (24 * 60 * 60 * 1000)); // Fallback: 24 hours from now
+      console.error("Invalid resetAt date in resetLimit, using fallback");
+      resetAt.setTime(Date.now() + 24 * 60 * 60 * 1000); // Fallback: 24 hours from now
     }
 
-    console.log('Resetting limit with new resetAt:', resetAt.toISOString());
+    console.log("Resetting limit with new resetAt:", resetAt.toISOString());
 
     return await prisma.scanLimit.update({
       where: { id: currentLimit.id },
@@ -230,20 +230,20 @@ export class ScanLimitService {
   static calculateNextDayResetTime(): Date {
     const now = new Date();
 
-    console.log('Current time (UTC):', now.toUTCString());
+    console.log("Current time (UTC):", now.toUTCString());
 
     // Get tomorrow's date at 00:00 UTC
     const tomorrow = new Date(now.getTime());
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
     tomorrow.setUTCHours(0, 0, 0, 0);
 
-    console.log('Calculated reset time (UTC):', tomorrow.toUTCString());
+    console.log("Calculated reset time (UTC):", tomorrow.toUTCString());
 
     // Validate the date
     if (isNaN(tomorrow.getTime())) {
-      console.error('Failed to calculate reset time, using fallback');
+      console.error("Failed to calculate reset time, using fallback");
       // Fallback: 24 hours from now
-      return new Date(now.getTime() + (24 * 60 * 60 * 1000));
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
     }
 
     return tomorrow;
