@@ -47,7 +47,7 @@ export class AIController {
         10
       );
 
-      if (limit.isLimitExceeded) {
+      if (limit.remaining <= 0) {
         return res.status(429).json({
           error: "Limit Exceeded",
           message:
@@ -55,7 +55,7 @@ export class AIController {
           data: {
             remaining: limit.remaining,
             total: limit.total,
-            isLimitExceeded: limit.isLimitExceeded,
+            isLimitExceeded: limit.remaining <= 0,
           },
         });
       }
@@ -154,7 +154,7 @@ export class AIController {
 
         // Update scan limits after successful scan
         try {
-          await LimitService.decrementLimit({ userId, guestId });
+          await ScanLimitService.decrementLimit({ userId, guestId });
         } catch (limitError) {
           console.error("Failed to decrement limit:", limitError);
           // Continue with response even if limit update fails
@@ -221,7 +221,7 @@ export class AIController {
 
           // Update scan limits after successful scan
           try {
-            await LimitService.decrementLimit({ userId, guestId });
+            await ScanLimitService.decrementLimit({ userId, guestId });
           } catch (limitError) {
             console.error("Failed to decrement limit:", limitError);
             // Continue with response even if limit update fails

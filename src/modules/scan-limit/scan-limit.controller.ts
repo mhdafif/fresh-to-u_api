@@ -3,7 +3,10 @@ import { Response } from "express";
 import { getGuestId } from "../../lib/cookies.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { ScanLimitService } from "./scan-limit.service.js";
-import { ScanLimitCheckResponse, scanLimitCheckSchema } from "./scan-limit.interfaces.js";
+import {
+  ScanLimitCheckResponse,
+  scanLimitCheckSchema,
+} from "./scan-limit.interfaces.js";
 
 export class ScanLimitController {
   static async checkLimit(req: AuthenticatedRequest, res: Response) {
@@ -76,7 +79,7 @@ export class ScanLimitController {
 
       // Transform data to match frontend interface
       const transformedData = {
-        canScan: !limit.isLimitExceeded,
+        canScan: !(limit.remaining <= 0),
         remainingScans: limit.remaining,
         totalScans: limit.total,
         resetTime: limit.resetAt.toISOString(),
