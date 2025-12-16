@@ -31,6 +31,7 @@ const envSchema = z.object({
     .string()
     .transform((value) => Number(value))
     .default(10),
+  AI_LANGUAGE: z.enum(["id", "en"]).default("id"),
   // REDIS_URL: z.string().optional(),
 });
 

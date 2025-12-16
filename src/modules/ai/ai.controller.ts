@@ -3,7 +3,7 @@ import { generateText } from "ai";
 import { Response } from "express";
 import { z } from "zod";
 
-import { getGuestId } from "../../lib/cookies.js";
+import { getGuestId, getLanguage } from "../../lib/cookies.js";
 import { R2StorageService } from "../../lib/storage/r2.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { HistoryService } from "../history/history.service.js";
@@ -22,6 +22,7 @@ export class AIController {
   static async identify(req: AuthenticatedRequest, res: Response) {
     try {
       const validatedData = identifySchema.parse(req.body) as AIIdentifyRequest;
+      const language = getLanguage(req);
 
       // Get userId from authenticated user or guestId from guest
       let userId = undefined;
@@ -63,8 +64,7 @@ export class AIController {
       }
 
       const systemPrompt = `${promptEn}
-      - Respond in locale ${validatedData.locale}.`;
-
+      - Respond in locale ${language}.`;
       const { text } = await generateText({
         model: openai("gpt-4o-mini"),
         system: systemPrompt,
@@ -74,7 +74,7 @@ export class AIController {
             content: [
               {
                 type: "text",
-                text: `Identify the food in this image and return the result in valid JSON format. responde in locale ${validatedData.locale}.`,
+                text: `Identify the food in this image and return the result in valid JSON format. responde in locale ${language}.`,
               },
               {
                 type: "image",
@@ -103,7 +103,7 @@ export class AIController {
         const result = JSON.parse(jsonText) as AIIdentifyResponse;
 
         // Add locale and image URL to response
-        result.locale = validatedData.locale || "id";
+        result.locale = language;
 
         // Add image information to response if available
         if (imageUrl) {
@@ -180,7 +180,7 @@ export class AIController {
           const result = JSON.parse(fixedJson) as AIIdentifyResponse;
 
           // Add locale and image URL to response
-          result.locale = validatedData.locale || "id";
+          result.locale = language;
 
           // Add image information to response if available
           if (imageUrl) {

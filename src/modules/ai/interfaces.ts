@@ -8,7 +8,7 @@ export interface AIIdentifyResponse {
   name: string | null;
   category: "FRUIT" | "VEGETABLE" | "PROTEIN" | "OTHER";
   confidence: number;
-  locale: "id" | "en";
+  locale: "id" | "en" | string;
   selection_tips: string[];
   storage: {
     method: string;

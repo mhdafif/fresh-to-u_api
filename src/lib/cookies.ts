@@ -1,4 +1,5 @@
 import { Request } from "express";
+import env from "../config/env";
 
 export function getGuestId(req: Request): string | null {
   // console.log("req.headers", req.headers);
@@ -36,4 +37,12 @@ export function getClientIpAddress(req: Request): string | null {
 
   // Fallback to connection remoteAddress
   return req.connection?.remoteAddress || req.socket?.remoteAddress;
+}
+
+export function getLanguage(req: Request): string | null {
+  const acceptLanguage = req.headers["accept-language"];
+  if (acceptLanguage) {
+    return (acceptLanguage as string).split(",")[0].trim();
+  }
+  return env.AI_LANGUAGE; // default language
 }
