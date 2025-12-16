@@ -20,12 +20,6 @@ export interface HistoryOwner {
   guestId?: string | null;
 }
 
-export interface GuestScanLimitInfo {
-  canScan: boolean;
-  remainingScans: number;
-  resetTime: Date | null;
-}
-
 export interface Detail {
   name: string;
   category: string;

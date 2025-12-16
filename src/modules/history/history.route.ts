@@ -12,6 +12,6 @@ router.use(optionalAuth);
 router.get("/", HistoryController.getHistory);
 
 // Check scan limit
-router.get("/scan-limit", HistoryController.checkScanLimit);
+// router.get("/scan-limit", HistoryController.checkScanLimit);
 
 export default router;
