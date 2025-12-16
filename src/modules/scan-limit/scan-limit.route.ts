@@ -9,6 +9,5 @@ const router: Router = Router();
 router.use(optionalAuth);
 
 router.get("/", ScanLimitController.checkLimit);
-router.get("/default", ScanLimitController.getDefaultLimit);
 
 export default router;

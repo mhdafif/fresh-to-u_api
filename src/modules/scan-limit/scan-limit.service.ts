@@ -4,6 +4,7 @@ import {
   ScanLimitCreateRequest,
   ScanLimitUpdateRequest,
 } from "./scan-limit.interfaces.js";
+import env from "../../config/env.js";
 
 export class ScanLimitService {
   static async checkLimit(request: ScanLimitCheckRequest) {
@@ -22,12 +23,14 @@ export class ScanLimitService {
 
     if (!limit) {
       // If no limit exists, create one with default values
-      const defaultTotal = 10;
+      const dailyLimit = userId
+        ? env.FREE_USER_DAILY_SCAN_LIMIT
+        : env.GUEST_USER_DAILY_SCAN_LIMIT;
       try {
         limit = await this.createLimit({
           userId,
           guestId,
-          total: defaultTotal,
+          dailyLimit: dailyLimit,
         });
       } catch (error) {
         console.error("Error creating limit:", error);
@@ -56,14 +59,14 @@ export class ScanLimitService {
 
     return {
       remaining: limit.remaining,
-      total: limit.total,
-      isLimitExceeded: limit.remaining <= 0,
+      // totalScans: limit.total,
+      // isLimitExceeded: limit.remaining <= 0,
       resetAt: limit.resetAt,
     };
   }
 
   static async createLimit(request: ScanLimitCreateRequest) {
-    const { userId, guestId, total } = request;
+    const { userId, guestId, dailyLimit } = request;
 
     if (!userId && !guestId) {
       throw new Error("Either userId or guestId must be provided");
@@ -74,23 +77,23 @@ export class ScanLimitService {
 
     // Validate the resetAt date and provide a safe fallback
     if (!resetAt || isNaN(resetAt.getTime())) {
-      console.error("Invalid resetAt date calculated, using fallback");
+      // console.error("Invalid resetAt date calculated, using fallback");
       // Fallback: 24 hours from now in a clean date object
       const now = new Date();
       resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     }
 
-    console.log("Creating limit with resetAt:", resetAt.toISOString());
-    console.log("resetAt type:", typeof resetAt);
-    console.log("resetAt value:", resetAt);
+    // console.log("Creating limit with resetAt:", resetAt.toISOString());
+    // console.log("resetAt type:", typeof resetAt);
+    // console.log("resetAt value:", resetAt);
 
     try {
       return await prisma.scanLimit.create({
         data: {
           userId: userId || null,
           guestId: guestId || null,
-          remaining: total,
-          total,
+          remaining: dailyLimit,
+          dailyLimit,
           resetAt: resetAt, // Ensure it's a Date object
         },
       });
@@ -158,7 +161,10 @@ export class ScanLimitService {
     return await prisma.scanLimit.update({
       where: { id: currentLimit.id },
       data: {
-        remaining: currentLimit.remaining - 1,
+        remaining: {
+          decrement: 1,
+        },
+        // remaining: currentLimit.remaining - 1,
       },
     });
   }
@@ -194,54 +200,22 @@ export class ScanLimitService {
     return await prisma.scanLimit.update({
       where: { id: currentLimit.id },
       data: {
-        remaining: currentLimit.total, // Reset to full capacity
+        remaining: currentLimit.dailyLimit, // Reset to full capacity
         resetAt,
       },
     });
   }
 
-  static async getOrCreateDefaultLimit(
-    request: ScanLimitCheckRequest,
-    defaultTotal: number = 10
-  ) {
-    const { userId, guestId } = request;
-
-    if (!userId && !guestId) {
-      throw new Error("Either userId or guestId must be provided");
-    }
-
-    try {
-      // Try to get existing limit
-      const limit = await this.checkLimit(request);
-      return limit;
-    } catch (error) {
-      // If no limit exists, create one with default values
-      return await this.createLimit({
-        userId,
-        guestId,
-        total: defaultTotal,
-      });
-    }
-  }
-
-  /**
-   * Calculate the reset time for next day at 00:00 UTC
-   */
   static calculateNextDayResetTime(): Date {
     const now = new Date();
-
-    console.log("Current time (UTC):", now.toUTCString());
 
     // Get tomorrow's date at 00:00 UTC
     const tomorrow = new Date(now.getTime());
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
     tomorrow.setUTCHours(0, 0, 0, 0);
 
-    console.log("Calculated reset time (UTC):", tomorrow.toUTCString());
-
     // Validate the date
     if (isNaN(tomorrow.getTime())) {
-      console.error("Failed to calculate reset time, using fallback");
       // Fallback: 24 hours from now
       return new Date(now.getTime() + 24 * 60 * 60 * 1000);
     }
