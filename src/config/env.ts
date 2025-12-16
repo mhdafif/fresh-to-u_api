@@ -23,6 +23,14 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string(),
   R2_BUCKET_NAME: z.string(),
   R2_PUBLIC_URL: z.string(),
+  FREE_USER_DAILY_SCAN_LIMIT: z
+    .string()
+    .transform((value) => Number(value))
+    .default(15),
+  GUEST_USER_DAILY_SCAN_LIMIT: z
+    .string()
+    .transform((value) => Number(value))
+    .default(10),
   // REDIS_URL: z.string().optional(),
 });
 
