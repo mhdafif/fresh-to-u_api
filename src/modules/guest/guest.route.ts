@@ -7,6 +7,6 @@ const router: Router = Router();
 
 router.use(optionalAuth);
 
-router.get("/", GuestController.createOrGetGuest);
+router.get("/", GuestController.getOrCreateGuest);
 
 export default router;
