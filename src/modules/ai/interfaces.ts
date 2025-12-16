@@ -32,5 +32,4 @@ export interface AIIdentifyResponse {
     benefits: string[];
   };
   imageUrl?: string | null; // URL to the stored image in R2
-  imageKey?: string | null; // R2 storage key for the image
 }

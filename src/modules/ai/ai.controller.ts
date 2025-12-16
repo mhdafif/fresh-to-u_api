@@ -8,7 +8,6 @@ import { R2StorageService } from "../../lib/storage/r2.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { HistoryService } from "../history/history.service.js";
 import { FoodService } from "../food/food.service.js";
-import { GuestService } from "../guest/guest.service.js";
 import { AIIdentifyRequest, AIIdentifyResponse } from "./interfaces.js";
 import { promptEn } from "./prompt.js";
 import { ScanLimitService } from "../scan-limit/scan-limit.service.js";
@@ -16,6 +15,7 @@ import { ScanLimitService } from "../scan-limit/scan-limit.service.js";
 const identifySchema = z.object({
   image: z.string().min(1, "Image is required"),
   locale: z.enum(["id", "en"]).default("en"),
+  type: z.enum(["SCAN", "SEARCH"]).optional(),
 });
 
 export class AIController {
@@ -31,30 +31,20 @@ export class AIController {
         userId = req.user.id;
       } else {
         guestId = getGuestId(req);
-
-        // If no guestId exists, create one and set guest
-        // if (!guestId) {
-        //   const ipAddress = GuestService.getClientIpAddress(req);
-        //   const guest = await GuestService.getOrCreateGuest(undefined, ipAddress);
-        //   guestId = guest.id;
-        //   GuestService.setGuestCookie(res, guestId);
-        // }
       }
 
       // Check scan limits
-      const limit = await ScanLimitService.getOrCreateDefaultLimit(
-        { userId, guestId },
-        10
-      );
+      const limit = await ScanLimitService.checkLimit({ userId, guestId });
 
       if (limit.remaining <= 0) {
         return res.status(429).json({
           error: "Limit Exceeded",
           message:
-            "You have reached your scan limit. Please upgrade your plan or try again later.",
+            "You have reached your scan limit. Please upgrade try again later.",
+          // "You have reached your scan limit. Please upgrade your plan or try again later.",
           data: {
             remaining: limit.remaining,
-            total: limit.total,
+            // total: limit.total,
             isLimitExceeded: limit.remaining <= 0,
           },
         });
@@ -118,7 +108,6 @@ export class AIController {
         // Add image information to response if available
         if (imageUrl) {
           result.imageUrl = imageUrl;
-          // result.imageKey = imageKey;
         }
 
         // Validate the result structure for food items
@@ -130,16 +119,18 @@ export class AIController {
           throw new Error("Invalid response structure");
         }
 
-        // Handle food tracking using FoodService
-        try {
-          await FoodService.findOrCreateFood({
-            name: result.name,
-            variety: result.notes.variety_guess || null,
-            detail: JSON.parse(JSON.stringify(result)),
-          });
-        } catch (foodError) {
-          console.error("Failed to track food:", foodError);
-          // Continue with the response even if food tracking fails
+        if (result.category !== "OTHER") {
+          // Handle food tracking using FoodService
+          try {
+            await FoodService.findOrCreateFood({
+              name: result.name,
+              variety: result.notes.variety_guess || null,
+              detail: JSON.parse(JSON.stringify(result)),
+            });
+          } catch (foodError) {
+            console.error("Failed to track food:", foodError);
+            // Continue with the response even if food tracking fails
+          }
         }
 
         let userId = null;
@@ -194,19 +185,20 @@ export class AIController {
           // Add image information to response if available
           if (imageUrl) {
             result.imageUrl = imageUrl;
-            // result.imageKey = imageKey;
           }
 
-          // Handle food tracking using FoodService
-          try {
-            await FoodService.findOrCreateFood({
-              name: result.name,
-              variety: result.notes.variety_guess || null,
-              detail: JSON.parse(JSON.stringify(result)),
-            });
-          } catch (foodError) {
-            console.error("Failed to track food:", foodError);
-            // Continue with the response even if food tracking fails
+          if (result.category !== "OTHER") {
+            // Handle food tracking using FoodService
+            try {
+              await FoodService.findOrCreateFood({
+                name: result.name,
+                variety: result.notes.variety_guess || null,
+                detail: JSON.parse(JSON.stringify(result)),
+              });
+            } catch (foodError) {
+              console.error("Failed to track food:", foodError);
+              // Continue with the response even if food tracking fails
+            }
           }
 
           let userId = null;
