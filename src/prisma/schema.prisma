@@ -7,37 +7,37 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String      @id @default(cuid())
+  email         String      @unique
   passwordHash  String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  emailVerified Boolean   @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  emailVerified Boolean     @default(false)
   image         String?
   name          String?
   accounts      Account[]
   histories     History[]
-  scanLimits     ScanLimit[]
+  scanLimits    ScanLimit[]
 }
 
 model Guest {
-  id        String    @id @default(cuid())
-  ipAddress String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  histories History[]
+  id         String      @id @default(cuid())
+  ipAddress  String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  histories  History[]
   scanLimits ScanLimit[]
 }
 
 model ScanLimit {
-  id        String   @id @default(cuid())
-  userId    String?
-  guestId   String?
-  remaining Int      @default(0)
-  total     Int      @default(0)
-  resetAt   DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String?
+  guestId    String?
+  remaining  Int      @default(0)
+  dailyLimit Int      @default(0)
+  resetAt    DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   guest Guest? @relation(fields: [guestId], references: [id], onDelete: Cascade)
