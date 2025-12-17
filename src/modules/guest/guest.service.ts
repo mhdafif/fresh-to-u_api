@@ -2,7 +2,7 @@ import { Response } from "express";
 import { prisma } from "../../prisma.js";
 
 export class GuestService {
-  static async createGuest(guestId?: string, ipAddress?: string) {
+  static async createGuest(ipAddress?: string) {
     return await prisma.guest.create({
       data: {
         id: `guest-${crypto.randomUUID()}`,

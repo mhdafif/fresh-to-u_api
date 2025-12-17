@@ -4,7 +4,7 @@ import {
   CreateHistoryData,
   GetHistoryOptions,
   HistoryOwner,
-} from "./interfaces.js";
+} from "./history.interfaces.js";
 
 export class HistoryService {
   static async create(data: CreateHistoryData) {

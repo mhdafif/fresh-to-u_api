@@ -8,6 +8,7 @@ import env from "./config/env.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import aiRoutes from "./modules/ai/ai.route.js";
 import authRoutes from "./modules/auth/auth.route.js";
+import foodRoutes from "./modules/food/food.route.js";
 import guestRoutes from "./modules/guest/guest.route.js";
 import historyRoutes from "./modules/history/history.route.js";
 import scanLimitRoutes from "./modules/scan-limit/scan-limit.route.js";
@@ -37,6 +38,7 @@ app.get("/health", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/food", foodRoutes);
 app.use("/api/guest", guestRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/scan-limit", scanLimitRoutes);
