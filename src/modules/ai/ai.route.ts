@@ -11,5 +11,6 @@ router.use(rateLimiter);
 router.use(optionalAuth);
 
 router.post("/identify", AIController.identify);
+router.post("/identify-query", AIController.identifyByQuery);
 
 export default router;
