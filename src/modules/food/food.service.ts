@@ -1,5 +1,5 @@
 import { prisma } from "../../prisma.js";
-import { FindFoodRequest } from "./interfaces.js";
+import { FindFoodRequest } from "./food.interfaces.js";
 
 export interface FoodCreateData {
   name: string;
@@ -95,56 +95,56 @@ export class FoodService {
     return await this.create({ name, variety, detail });
   }
 
-  // static async findById(id: string) {
-  //   return prisma.food.findUnique({
-  //     where: { id },
-  //   });
-  // }
+  static async findById(id: string) {
+    return prisma.food.findUnique({
+      where: { id },
+    });
+  }
 
-  // static async getAll(
-  //   options: { page?: number; per_page?: number; search?: string } = {}
-  // ) {
-  //   const { page = 1, per_page = 20, search } = options;
-  //   const skip = (page - 1) * per_page;
+  static async getAll(
+    options: { page?: number; per_page?: number; search?: string } = {}
+  ) {
+    const { page = 1, per_page = 20, search } = options;
+    const skip = (page - 1) * per_page;
 
-  //   const whereClause: any = {};
+    const whereClause: any = {};
 
-  //   if (search && search.trim()) {
-  //     whereClause.OR = [
-  //       {
-  //         name: {
-  //           contains: search.trim(),
-  //           mode: "insensitive",
-  //         },
-  //       },
-  //       {
-  //         variety: {
-  //           contains: search.trim(),
-  //           mode: "insensitive",
-  //         },
-  //       },
-  //     ];
-  //   }
+    if (search && search.trim()) {
+      whereClause.OR = [
+        {
+          name: {
+            contains: search.trim(),
+            mode: "insensitive",
+          },
+        },
+        {
+          variety: {
+            contains: search.trim(),
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
 
-  //   const [foods, total] = await Promise.all([
-  //     prisma.food.findMany({
-  //       where: whereClause,
-  //       orderBy: {
-  //         timesSearched: "desc",
-  //       },
-  //       take: per_page,
-  //       skip,
-  //     }),
-  //     prisma.food.count({
-  //       where: whereClause,
-  //     }),
-  //   ]);
+    const [foods, total] = await Promise.all([
+      prisma.food.findMany({
+        where: whereClause,
+        orderBy: {
+          timesSearched: "desc",
+        },
+        take: per_page,
+        skip,
+      }),
+      prisma.food.count({
+        where: whereClause,
+      }),
+    ]);
 
-  //   return {
-  //     foods,
-  //     total,
-  //     page,
-  //     per_page,
-  //   };
-  // }
+    return {
+      foods,
+      total,
+      page,
+      per_page,
+    };
+  }
 }
